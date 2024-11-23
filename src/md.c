@@ -11,6 +11,9 @@
 
 #ifdef USE_MD
 
+static MD* MD_CONSOLE;
+static MD_CART* MD_CARTRIDGE;
+
 /* INITIALISE THE CONSOLE THROUGH THE PRE-REQUISTIES */
 /* ESTABLISHED IN THE CORRESPONDING HEADER FILES */
 
@@ -19,9 +22,7 @@
 /* IT'S INITIAL COMMUNICATIONS BETWEEN M68K AND Z80 ON STARTUP */
 
 void MD_INIT(void)
-{
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
-    
+{    
     /* ASSUMING THAT THE ABOVE COROUTINE HAVE BEEN ESTABLISHED */
     /* THE MEMORY MAP WILL NOW BE INITIALISED */
 
@@ -30,54 +31,38 @@ void MD_INIT(void)
 
     for (int i = 0; i < 0xFF; i++)
     {
-        CPU_BASE->MEMORY_MAP[i].MEMORY_READ_8 = M68K_READ_8;
-        CPU_BASE->MEMORY_MAP[i].MEMORY_WRITE_8 = M68K_WRITE_8;
-        CPU_BASE->MEMORY_MAP[i].MEMORY_READ_16 = M68K_READ_16;
-        CPU_BASE->MEMORY_MAP[i].MEMORY_WRITE_16 = M68K_WRITE_16;
+        CPU->MEMORY_MAP[i].MEMORY_READ_8 = M68K_READ_8;
+        CPU->MEMORY_MAP[i].MEMORY_WRITE_8 = M68K_WRITE_8;
+        CPU->MEMORY_MAP[i].MEMORY_READ_16 = M68K_READ_16;
+        CPU->MEMORY_MAP[i].MEMORY_WRITE_16 = M68K_WRITE_16;
 
-        CPU_BASE->Z80_MEM[i].READ = Z80_READ;
-        CPU_BASE->Z80_MEM[i].WRITE = Z80_WRITE;
+        CPU->Z80_MEM[i].READ = Z80_READ;
+        CPU->Z80_MEM[i].WRITE = Z80_WRITE;
     }
 
     /* VDP ENTRY POINTS */
 
     for (int i = 0xC; i < 0xFF; i++)
     {
-        CPU_BASE->MEMORY_MAP[i].MEMORY_READ_8 =  VDP_READ_BYTE;
-        CPU_BASE->MEMORY_MAP[i].MEMORY_WRITE_8 = M68K_WRITE_8;
-        CPU_BASE->MEMORY_MAP[i].MEMORY_READ_16 = VDP_READ_WORD;
-        CPU_BASE->MEMORY_MAP[i].MEMORY_WRITE_16 = M68K_WRITE_16;
+        CPU->MEMORY_MAP[i].MEMORY_READ_8 =  VDP_READ_BYTE;
+        CPU->MEMORY_MAP[i].MEMORY_WRITE_8 = M68K_WRITE_8;
+        CPU->MEMORY_MAP[i].MEMORY_READ_16 = VDP_READ_WORD;
+        CPU->MEMORY_MAP[i].MEMORY_WRITE_16 = M68K_WRITE_16;
     }
 
     /* IO CONTROL REGISTERS */
 
     for (int i = 0; i < 0xA100; i++)
     {
-        CPU_BASE->MEMORY_MAP[0xA1].MEMORY_READ_8 = CTRL_READ_BYTE;
-        CPU_BASE->MEMORY_MAP[0xA1].MEMORY_WRITE_8 = CTRL_WRITE_BYTE;
-        CPU_BASE->MEMORY_MAP[0xA1].MEMORY_READ_8 = CTRL_READ_WORD;
-        CPU_BASE->MEMORY_MAP[0xA1].MEMORY_WRITE_8 = CTRL_WRITE_WORD;
+        CPU->MEMORY_MAP[0xA1].MEMORY_READ_8 = CTRL_READ_BYTE;
+        CPU->MEMORY_MAP[0xA1].MEMORY_WRITE_8 = CTRL_WRITE_BYTE;
+        CPU->MEMORY_MAP[0xA1].MEMORY_READ_8 = CTRL_READ_WORD;
+        CPU->MEMORY_MAP[0xA1].MEMORY_WRITE_8 = CTRL_WRITE_WORD;
     }
 
-    free(CPU_BASE);   
+    free(CPU);   
 }
-    
-/* AFTER THE INITIALISATION OF THE MEMORY MAP */
-/* THE CONSOLE EMULATION WILL COMMENCE BY ALLOCATING CORRESPONDING MEMORY */
-/* TO THE STACK */
 
-void MD_MAKE()
-{
-    /* ALLOCATE MEMORY FOR THE BASE STRUCTURE WHICH HOUSES */
-    /* THE CORRESPONDENCE OF EACH COMPONENT, CPU AND CONSOLE */
-
-    struct MD* MD_CONSOLE = malloc(sizeof(struct MD));
-
-    MD_CONSOLE->SYS_ROM = (U8*)malloc(sizeof(MD_CONSOLE->SYS_ROM));
-    MD_CONSOLE->SYS_RAM = (U8*)malloc(sizeof(MD_CONSOLE->SYS_RAM));
-
-    free(MD_CONSOLE);
-}
 
 /* NOW COMES THE COROUTINE FOR RESETTING THE CONSOLE */
 /* THIS WILL DETERMINE BY AN NUMERICAL VALUE TO DISCERN THE RESET TYPE */
@@ -95,8 +80,6 @@ void MD_MAKE()
 
 void MD_RESET(void)
 {
-    struct MD* MD_CONSOLE = malloc(sizeof(struct MD)); 
-    struct CPU_68K* CPU_68K = malloc(sizeof(struct CPU_68K));
     MD_RESET_MODE MODE = 0;
 
     switch (MODE)
@@ -110,9 +93,9 @@ void MD_RESET(void)
         /* IN RELATION TO THE BOOT RAM GOVERNED BY IT'S DESIGNATED DATA REGISTER */
 
         case MODE_SOFT:
-            CPU_68K->PC = MD_CONSOLE->BOOT_RAM;
-            CPU_68K->STACK_POINTER = 0x2700;
-            CPU_68K->REGISTER_BASE[7] = MD_CONSOLE->BOOT_RAM;
+            CPU->PC = MD_CONSOLE->BOOT_RAM;
+            CPU->STACK_POINTER = 0x2700;
+            CPU->REGISTER_BASE[7] = MD_CONSOLE->BOOT_RAM;
             break;
 
         /* HARD RESET ENVOKES THAT ALL ASPECTS OF THE CONSOLE NEED TO BE */
@@ -125,9 +108,9 @@ void MD_RESET(void)
         /* BACK TO DEFAULT */
 
         case MODE_HARD:
-            CPU_68K->PC = MD_CONSOLE->BOOT_RAM;
-            CPU_68K->STACK_POINTER = 0x2700;
-            CPU_68K->REGISTER_BASE[7] = MD_CONSOLE->BOOT_RAM;
+            CPU->PC = MD_CONSOLE->BOOT_RAM;
+            CPU->STACK_POINTER = 0x2700;
+            CPU->REGISTER_BASE[7] = MD_CONSOLE->BOOT_RAM;
             memset(MD_CONSOLE->BOOT_RAM, 0x00, sizeof(MD_CONSOLE->BOOT_RAM));
             memset(MD_CONSOLE->ZRAM, 0x00, sizeof(MD_CONSOLE->ZRAM));
             break;
@@ -135,9 +118,6 @@ void MD_RESET(void)
         default:
             break;
     } 
-
-    free(MD_CONSOLE);
-    free(CPU_68K);
 }
 
 /* THE BANK SWITCH FUNCTIONS LOOKS INTO THE CORRESPODENCE STORED IN */
@@ -148,34 +128,29 @@ void MD_RESET(void)
 
 U32* MD_BANKSWITCH()
 {
-    struct MD* MD_CONSOLE = malloc(sizeof(struct MD));
-    struct CPU_68K* CPU_68K = malloc(sizeof(struct CPU_68K));
-
     /* IS THE BOOT ROM INITIALISED? */
 
-    MD_CONSOLE->SYSTEM_BIOS = 0;
+    memset(MD_CONSOLE->SYSTEM_BIOS, 0, 0);
 
     switch (MD_CONSOLE->SYSTEM_BIOS)
     {
         case 0:
-            CPU_68K->MEMORY_MAP[0].MEMORY_BASE = (unsigned char*)MD_CONSOLE->BOOT_ROM;
+            CPU->MEMORY_MAP[0].MEMORY_BASE = (unsigned char*)MD_CONSOLE->BOOT_ROM;
             break;
 
         /* IS THE ROM LOADED IN THE MEMORY MAP? */
 
         case 1:
-            CPU_68K->MEMORY_MAP[0].MEMORY_BASE = (unsigned char*)MD_CONSOLE->MD_CART->ROM_BASE;
+            CPU->MEMORY_MAP[0].MEMORY_BASE = (unsigned char*)MD_CONSOLE->MD_CART->ROM_BASE;
             break;
 
         default:
             if(MD_CONSOLE->SYSTEM_BIOS == SYSTEM_MD)
-                return (CPU_68K->MEMORY_MAP[0].MEMORY_BASE = (unsigned char*)MD_CONSOLE->MD_CART->ROM_BASE);
+                return (CPU->MEMORY_MAP[0].MEMORY_BASE = (unsigned char*)MD_CONSOLE->MD_CART->ROM_BASE);
             break;
     }
 
     return ZBUFFER_MAX;
-    free(MD_CONSOLE);
-    free(CPU_68K);
 }
 
 /* INITIALISE THE FUNCTIONALITY PERTAINING TOWARDS THE Z80 AS IT COMMUNICATES */
@@ -186,8 +161,6 @@ U32* MD_BANKSWITCH()
 
 void MD_BUS_REQ(unsigned STATE, unsigned CYCLES)
 {
-    struct CPU_68K* CPU_68K = malloc(sizeof(struct CPU_68K));
-    struct MD* MD_CONSOLE = malloc(sizeof(struct MD));
 
     assert(&STATE); /* EVALUATE THE INITIAL STATE */
 
@@ -201,10 +174,10 @@ void MD_BUS_REQ(unsigned STATE, unsigned CYCLES)
 
         /* EVALUATE THE ACCESS BETWEEN THE 68K AND Z80 AFTER THE SYNC */
 
-        CPU_68K->MEMORY_MAP[0xA0].MEMORY_READ_8 = Z80_READ;
-        CPU_68K->MEMORY_MAP[0xA0].MEMORY_WRITE_8 = Z80_WRITE;
-        CPU_68K->MEMORY_MAP[0xA0].MEMORY_READ_16 = Z80_READ;
-        CPU_68K->MEMORY_MAP[0xA0].MEMORY_WRITE_16 = Z80_WRITE;
+        CPU->MEMORY_MAP[0xA0].MEMORY_READ_8 = Z80_READ;
+        CPU->MEMORY_MAP[0xA0].MEMORY_WRITE_8 = Z80_WRITE;
+        CPU->MEMORY_MAP[0xA0].MEMORY_READ_16 = Z80_READ;
+        CPU->MEMORY_MAP[0xA0].MEMORY_WRITE_16 = Z80_WRITE;
         STATE |= 2;
     }
 
@@ -215,17 +188,14 @@ void MD_BUS_REQ(unsigned STATE, unsigned CYCLES)
     {
         if(MD_CONSOLE->ZSTATE == 3)
         {
-            CPU_68K->MEMORY_MAP[0xA0].MEMORY_READ_8 = M68K_READ_8;
-            CPU_68K->MEMORY_MAP[0xA0].MEMORY_WRITE_8 = M68K_WRITE_8;
-            CPU_68K->MEMORY_MAP[0xA0].MEMORY_READ_16 = M68K_READ_16;
-            CPU_68K->MEMORY_MAP[0xA0].MEMORY_WRITE_16 = M68K_WRITE_16;
+            CPU->MEMORY_MAP[0xA0].MEMORY_READ_8 = M68K_READ_8;
+            CPU->MEMORY_MAP[0xA0].MEMORY_WRITE_8 = M68K_WRITE_8;
+            CPU->MEMORY_MAP[0xA0].MEMORY_READ_16 = M68K_READ_16;
+            CPU->MEMORY_MAP[0xA0].MEMORY_WRITE_16 = M68K_WRITE_16;
         }
     }
     
     STATE &= 1;
-
-    free(MD_CONSOLE);
-    free(CPU_68K);
 }
 
 /* USING RUNTIME OF THE CONSOLE, STORE RELEVANT REGISTERS AND THEIR STATES AND CONDITIONS */
@@ -283,7 +253,6 @@ void MD_SAVE_REGISTER_STATE(struct CPU_68K* CPU_68K)
 
 int MD_UPDATE_BANKING(struct CPU_68K* CPU_68K, int BANKS)
 {
-    struct MD* MD_CONSOLE = malloc(sizeof(struct MD));
     int CURRENT_BANK = 0;
 
     *MD_CONSOLE->TMSS = 0;
@@ -293,7 +262,6 @@ int MD_UPDATE_BANKING(struct CPU_68K* CPU_68K, int BANKS)
         CURRENT_BANK = MD_UPDATE_BANKING(CPU_68K->TMSS_BASE[CURRENT_BANK], BANKS);
     }
 
-    free(MD_CONSOLE);
     return CURRENT_BANK;
 }
 
@@ -305,7 +273,6 @@ int MD_UPDATE_BANKING(struct CPU_68K* CPU_68K, int BANKS)
 
 int MD_CART_UPDATE_BANKING(struct CPU_68K* CPU_68K, int BANKS)
 {
-    struct MD_CART* MD_CARTRIDGE = malloc(sizeof(MD_CART));
     int BANKS_UPDATED = 0;
     int INDEX = 0;
 
@@ -341,48 +308,37 @@ int MD_CART_UPDATE_BANKING(struct CPU_68K* CPU_68K, int BANKS)
 /* WHILE THE FUNCTION IS AN INT, IT WILL BE VOID AS THERE WILL BE NO LOCAL */
 /* RETURN TYPE, JUST FOR BASIC CONDITIONS */
 
-int MD_CART_INIT(void)
+int MD_CART_INIT(struct MD_CART* CART, unsigned char* DATA, unsigned long *SIZE)
 {
-    struct MD_CART* MD_CARTRIDGE = malloc(sizeof(struct MD_CART));
-
     /* ASSUME TO BEGIN WITH THAT THERE IS NO CURRENT ROM */
     /* BEING LOADED ONTO THE STACK */
 
-    MD_CARTRIDGE->ROM_BASE = 0;
-
-    if(!MD_CARTRIDGE->ROM_BASE)
-    {
-        free(MD_CARTRIDGE);
-        return -1;
-    }
+    CART->ROM_BASE = DATA;
+    CART->ROM_SIZE = SIZE;
 
     /* CHECK TO DETERMINE IF THE FILE IS TOO BIG */
     /* IN THE LUCKLIHOOD OF AN INCOMPLETE FILE TYPE */
 
-    if(MD_CARTRIDGE->ROM_SIZE == CART_MAX_SIZE)
+    if(CART->ROM_SIZE == MD_CART_ROM_SIZE)
     {
-        free(MD_CARTRIDGE);
         return -2;
     }
 
     /* ALLOCATE INITAL SPACE FOR THE CARTRIDGE */
-    
-    MD_CARTRIDGE->ROM_BASE += *(U32*)malloc(sizeof(MD_CARTRIDGE->ROM_SIZE));
+
+    CART->ROM_BASE += *(unsigned char*)malloc(sizeof(CART->ROM_SIZE));
 
     /* STORE THE INITIAL 512KB FOR SSE2 */
     /* THIS IS BY ALIGNING 16 BYTES OF ADDRESSABLE VECTOR TYPES TO THE HEADER */
     
-    /* 17/02/24 - UPDATED THE DEFERENCING NULLPTR EXCEPTION */
-    /* USING ALIGNED MALLOC FIXES THESE ISSUES BY ALIGNING FOR A SPECIFIC PIECE OF MEMORY */
-
-    MD_CARTRIDGE->ROM_DATA = (void*)malloc((MD_CARTRIDGE->ROM_SIZE));
+    memcpy(CART->ROM_DATA, CART->ROM_BASE, CART->ROM_SIZE);
 
     /* AFTER ALLOCATING THE PROVIDED MEMORY TO THE STACK */
     /* BEGIN BY INITIALISAING THE MEMORY MAP OF THE CARTRIDGE */
 
     MD_CART_MEMORY_MAP();
 
-    free(MD_CARTRIDGE);
+    free(CART);
     return 0;
 }
 
@@ -398,8 +354,6 @@ int MD_CART_INIT(void)
 void MD_CART_MEMORY_MAP(void)
 {
     UNK INDEX;
-    struct MD_CART* MD_CARTRIDGE = malloc(sizeof(struct MD_CART));
-    struct CPU_68K* CPU_68K = malloc(sizeof(struct CPU_68K));
     int MAP_MODE = 0;
 
     switch (MAP_MODE)
@@ -413,13 +367,10 @@ void MD_CART_MEMORY_MAP(void)
             for (INDEX = 0; INDEX < 8; INDEX++)
                 MD_CARTRIDGE->CARTRIDGE_BANKS[INDEX] = MD_CART_BANK_RO;
 
-            memcpy(&MD_CARTRIDGE->REGISTER_READ, &CPU_68K->REGISTER_BASE, sizeof(MD_CARTRIDGE->REGISTER_READ));
+            memcpy(&MD_CARTRIDGE->REGISTER_READ, &CPU->REGISTER_BASE, sizeof(MD_CARTRIDGE->REGISTER_READ));
 
             break;
     }
-
-    free(MD_CARTRIDGE);
-    free(CPU_68K);
 }
 
 /* ========================================================== */
@@ -428,82 +379,64 @@ void MD_CART_MEMORY_MAP(void)
 
 unsigned int M68K_READ_8(unsigned int ADDRESS)
 {
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
     int INDEX = 0;
 
-    CPU_BASE->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
+    CPU->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
 
-    return READ_BYTE(CPU_BASE->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
-    free(CPU_BASE);
-
+    return READ_BYTE(CPU->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
 }
 
 unsigned int M68K_READ_16(unsigned int ADDRESS)
 {
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
     int INDEX = 0;
 
-    CPU_BASE->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
+    CPU->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
 
-    return READ_WORD(CPU_BASE->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
-    free(CPU_BASE);
+    return READ_WORD(CPU->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
 }
 
 void M68K_WRITE_8(unsigned int ADDRESS, unsigned int DATA)
 {
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
-    CPU_BASE->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
-    free(CPU_BASE);
+    CPU->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
 }
 
 void M68K_WRITE_16(unsigned int ADDRESS, unsigned int DATA)
 {
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
-    CPU_BASE->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
-    free(CPU_BASE);
+    CPU->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
 }
 
 unsigned int M68K_READ_32(unsigned int ADDRESS)
 {
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
     int INDEX = 0;
+    CPU->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
 
-    CPU_BASE->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
-
-    return READ_WORD_LONG(CPU_BASE->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
-    free(CPU_BASE);
+    return READ_WORD_LONG(CPU->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
 }
 
 void M68K_WRITE_32(unsigned int ADDRESS, unsigned int DATA)
 {
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
-    CPU_BASE->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
-    free(CPU_BASE);
+    CPU->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
 }
 
 unsigned int Z80_READ(unsigned int ADDRESS)
 {
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
     unsigned int DATA = 0;
 
-    CPU_BASE->INSTRUCTION_CYCLES = malloc(M68K_LOW_BITMASK);
+    CPU->INSTRUCTION_CYCLES = malloc(M68K_LOW_BITMASK);
 
     switch((ADDRESS >> 13) & 3)
     {
         default:
-            CPU_BASE->Z80_MEM->ZRAM[ADDRESS & 0xFF] = DATA;
+            CPU->Z80_MEM->ZRAM[ADDRESS & 0xFF] = DATA;
             break;
     }
 
     return (DATA | (DATA << 8));
-    free(CPU_BASE);
 }
 
 void Z80_WRITE(unsigned int ADDRESS, unsigned int DATA)
 {
-    struct CPU_68K* CPU_BASE = malloc(sizeof(struct CPU_68K));
-
-    CPU_BASE->INSTRUCTION_CYCLES = malloc(M68K_LOW_BITMASK);
+    CPU->INSTRUCTION_CYCLES = malloc(M68K_LOW_BITMASK);
 
     switch((ADDRESS > 13) & 3)
     {
@@ -512,11 +445,9 @@ void Z80_WRITE(unsigned int ADDRESS, unsigned int DATA)
             return;
 
         default:
-            CPU_BASE->Z80_MEM->ZRAM[ADDRESS & 0x1FFF] = DATA;
+            CPU->Z80_MEM->ZRAM[ADDRESS & 0x1FFF] = DATA;
             return;
     }
-
-    free(CPU_BASE);
 }
 
 unsigned int CTRL_READ_BYTE(unsigned int ADDRESS)
