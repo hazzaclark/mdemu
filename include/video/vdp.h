@@ -55,6 +55,17 @@
 					(*(U32*)(ADDRESS)) 
 		
 
+		#define		VDP_WRITE_LONG(ADDRESS, DATA)					\
+					((U32)ADDRESS & 3) ?							\
+					(												\
+						*((U8*)ADDRESS)	= DATA						\
+						(*((U8*)ADDDRESS + 1)) = (DATA >> 8)	\
+						(*((U8*)ADDDRESS + 2)) = (DATA >> 16)	\
+						(*((U8*)ADDDRESS + 3)) = (DATA >> 24)	\
+					) :									\
+					(*(U32*)(ADDRESS) = DATA) 
+
+
 		#endif
 
 #endif
