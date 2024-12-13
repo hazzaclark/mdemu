@@ -26,7 +26,12 @@ make
 
 the following output should be an executable should ``mdemu`` 
 
-From there, drag and drop your ROM and enjoy!
+For Wayland support, drag and drop doesn't work in the conventional means
+So I have added command line support 
+
+Simply refer to the exe ``./mdemu`` followed by a path to your ROM
+
+``./mdemu /your/rom/path/here/rom.bin``
 
 ## Documentation used:
 
