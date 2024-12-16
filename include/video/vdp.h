@@ -102,6 +102,24 @@
 			#endif
 		#endif
 
+
+		typedef struct VDP_BITMAP
+		{
+			U8* DATA;
+			int WIDTH;
+			int HEIGHT;
+			int PITCH;
+
+			int X;
+			int Y;
+			int W;
+			int H;
+			int PREV_W;
+			int PREV_H;
+			int CHANGED;
+			
+		} VDP_BITMAP;
+
 		//===============================================================
 		//						GLOBAL DEFINITIONS
 		//===============================================================
