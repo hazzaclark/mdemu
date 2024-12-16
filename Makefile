@@ -2,30 +2,27 @@
 # SEGA MEGA DRIVE EMULATOR
 
 68000FILES          =       68000.c opcode.c
-MDFILES             =       main.c md.c psg.c vdp.c ym2612.c
-TARGET              =       mdemu
+MDFILES             =       md.c psg.c vdp.c ym2612.c cartridge.c
+CFILES              =       $(68000FILES) $(MDFILES) main.c
 
-EXE                 =       mdemu
-EXEPATH             =       ./
-
-CFILES              =       $(68000FILES) $(MDFILES)
 OFILES              =       $(CFILES:.c=.o)
 
+TARGET              =       mdemu
+EXEPATH             =       ./
+
 CC                  =       gcc
+CFLAGS              =       -std=c99 -Wall -Wextra -Wno-int-conversion -Wno-incompatible-pointer-types
+LDFLAGS             =       -lSDL2
 
-WARNINGS            =       -std=c99 -Wall -Wextra -Wno-int-conversion -Wno-incompatible-pointer-types 
-CFLAGS              =       $(WARNINGS)
+all: $(TARGET)
 
-all: run
-
-$(EXEPATH)$(EXE): $(OFILES)
-	$(CC) $(OFILES) -o $(EXEPATH)$(EXE)
+$(EXEPATH)$(TARGET): $(OFILES)
+	$(CC) $(OFILES) -o $(EXEPATH)$(TARGET) $(LDFLAGS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-run: $(EXEPATH)$(EXE)
-	./$(EXEPATH)$(EXE)
-
 clean:
-	rm -f $(OFILES) $(EXEPATH)$(EXE)
+	rm -f $(OFILES) $(EXEPATH)$(TARGET)
+
+.PHONY: all clean
