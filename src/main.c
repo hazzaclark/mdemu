@@ -47,6 +47,8 @@ int MD_CART_LOAD(char* FILENAME, MD_CART* CART)
 
     GET_CHECKSUM(CART->ROM_DATA, SIZE, FILENAME);
 
+    RENDER_INIT();
+
     fclose(ROM);
     printf("ROM Loaded Successfully. Size: %lu bytes\n", SIZE);
 
@@ -55,26 +57,8 @@ int MD_CART_LOAD(char* FILENAME, MD_CART* CART)
 
 void INIT_CHIPS(struct CPU_68K* CPU) 
 {
-    if (CPU == NULL) 
-    {
-        printf("Memory Allocation failed for CPU_68K\n");
-        return; 
-    }
-
     memset(CPU, 0, sizeof(struct CPU_68K));
     printf("Chipset Structs initialised.\n");
-}
-
-void PREPARE_STRUCTS(void)
-{
-    MD* CONSOLE = (MD*)malloc(sizeof(MD));
-    memset(CONSOLE, 0, sizeof(MD));
-
-    CPU_68K* CPU = (CPU_68K*)malloc(sizeof(CPU_68K));
-    memset(CPU, 0, sizeof(CPU_68K));
-
-    CONSOLE->MD_CART = (MD_CART*)malloc(sizeof(MD_CART));
-    memset(CONSOLE->MD_CART, 0, sizeof(MD_CART));
 }
 
 int main(int argc, char* argv[]) 
