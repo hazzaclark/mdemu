@@ -74,46 +74,55 @@
 		#if defined(USE_8BPP)
 		#define USE_8BPP
 		#else
-    		#define MAKE_PIXEL(R, G, B) (((R) << 5) | ((G) << 2) | (B))
-    		#define GET_R(PIXEL) (((PIXEL) & 0xe0) >> 5)
-    		#define GET_G(PIXEL) (((PIXEL) & 0x1c) >> 2)
-    		#define GET_B(PIXEL) (((PIXEL) & 0x03) >> 0)
+    		#define BIT_8_PIXEL(R, G, B) (((R) << 5) | ((G) << 2) | (B))
+    		#define GET_8_R(PIXEL) (((PIXEL) & 0xe0) >> 5)
+    		#define GET_8_G(PIXEL) (((PIXEL) & 0x1c) >> 2)
+    		#define GET_8_B(PIXEL) (((PIXEL) & 0x03) >> 0)
 
 		#endif
 
 		#if defined(USE_15BPP)
 		#define USE_15BPP
 		#else
-        	#define PIXEL(R, G, B) ((1 << 15) | ((B) << 10) | ((G) << 5) | (R))
-        	#define GET_B(PIXEL) (((PIXEL) & 0x7c00) >> 10)
-        #define GET_G(PIXEL) (((PIXEL) & 0x03e0) >> 5)
-        #define GET_R(PIXEL) (((PIXEL) & 0x001f) >> 0)
+        	#define BIT_15_PIXEL(R, G, B) ((1 << 15) | ((B) << 10) | ((G) << 5) | (R))
+        	#define GET_15_B(PIXEL) (((PIXEL) & 0x7c00) >> 10)
+        #define GET_15_G(PIXEL) (((PIXEL) & 0x03e0) >> 5)
+        #define GET_15_R(PIXEL) (((PIXEL) & 0x001f) >> 0)
     #endif
 
 	#if defined(USE_16BPP)
 		#define USE_16BPP
 	#else
-    	#define PIXEL(R, G, B) (((R) << 11) | ((G) << 5) | (B))
-    	#define GET_R(PIXEL) (((PIXEL) & 0xf800) >> 11)
-    	#define GET_G(PIXEL) (((PIXEL) & 0x07e0) >> 5)
-    	#define GET_B(PIXEL) (((PIXEL) & 0x001f) >> 0)
+    	#define BIT_16_PIXEL(R, G, B) (((R) << 11) | ((G) << 5) | (B))
+    	#define GET_16_R(PIXEL) (((PIXEL) & 0xf800) >> 11)
+    	#define GET_16_G(PIXEL) (((PIXEL) & 0x07e0) >> 5)
+    	#define GET_16_B(PIXEL) (((PIXEL) & 0x001f) >> 0)
 
 	#endif
 
 	#if defined(USE_32BPP)
 	#define USE_32BPP
 		#else
-    	#define PIXEL(R, G, B) ((0xff << 24) | ((R) << 16) | ((G) << 8) | (B))
-    	#define GET_R(PIXEL) (((PIXEL) & 0xff0000) >> 16)
-    	#define GET_G(PIXEL) (((PIXEL) & 0x00ff00) >> 8)
-    	#define GET_B(PIXEL) (((PIXEL) & 0x0000ff) >> 0)
+    	#define BIT_32_PIXEL(R, G, B) ((0xff << 24) | ((R) << 16) | ((G) << 8) | (B))
+    	#define GET_32_R(PIXEL) (((PIXEL) & 0xff0000) >> 16)
+    	#define GET_32_G(PIXEL) (((PIXEL) & 0x00ff00) >> 8)
+    	#define GET_32_B(PIXEL) (((PIXEL) & 0x0000ff) >> 0)
 
 	#endif
-
 		
 		typedef struct VDP_BASE
 		{
-			
+			U8 VDP_REG[0x20];
+			U8 HINT;
+			U8 VINT;
+			U16 STATUS;
+			U32 DMA_LEN;
+			U32 DMA_END_CYCLES;
+			U8 DMA_TYPE;
+
+			U16 A_BASE;
+			U16 B_BASE;
+			U16 W_BASE;
 
 		} VDP_BASE;
 
@@ -149,9 +158,8 @@
 		void RENDER_INIT(void);
 		void RENDER_RESET(void);
 		void PALETTE_INIT(void);
-		void(*RENDER_BG)(int LINE);
-		void(*RENDER_OBJ)(int LINE);
-		void(*UPDATE_BG_CACHE)(int INDEX);
+		void VDP_INIT(void);
+		void VDP_RESET(void);
 
 #endif
 #endif
