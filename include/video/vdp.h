@@ -37,6 +37,8 @@
 		#define		VDP_MAX_SPRITE_LINE		20
 		#define		VDP_TMSS_MAX_LINE		4
 
+		#define		VDP_LINE_BUFFER			0x200 * 2
+
 		// DEFINE AN ENDIANESS PARSER FOR READING 
 		// AND WRITING CONTENTS TO THE VDP
 
@@ -70,38 +72,50 @@
 		//===============================================================
 
 		#if defined(USE_8BPP)
-			#define PIXEL(R, G, B) (((R) << 5) | ((G) << 2) | (B))
-			#define GET_R(PIXEL) (((PIXEL) & 0xe0) >> 5)
-			#define GET_G(PIXEL) (((PIXEL) & 0x1c) >> 2)
-			#define GET_B(PIXEL) (((PIXEL) & 0x03) >> 0)
+		#define USE_8BPP
+		#else
+    		#define MAKE_PIXEL(R, G, B) (((R) << 5) | ((G) << 2) | (B))
+    		#define GET_R(PIXEL) (((PIXEL) & 0xe0) >> 5)
+    		#define GET_G(PIXEL) (((PIXEL) & 0x1c) >> 2)
+    		#define GET_B(PIXEL) (((PIXEL) & 0x03) >> 0)
 
-			#elif defined(USE_15BPP)
-				#if defined(USE_ABGR)
-					#define PIXEL(R, G, B) ((1 << 15) | ((B) << 10) | ((G) << 5) | (R))
-					#define GET_B(PIXEL) (((PIXEL) & 0x7c00) >> 10)
-					#define GET_G(PIXEL) (((PIXEL) & 0x03e0) >> 5)
-					#define GET_R(PIXEL) (((PIXEL) & 0x001f) >> 0)
-					#else
-					#define PIXEL(R, G, B) ((1 << 15) | ((R) << 10) | ((G) << 5) | (B))
-					#define GET_R(PIXEL) (((PIXEL) & 0x7c00) >> 10)
-					#define GET_G(PIXEL) (((PIXEL) & 0x03e0) >> 5)
-					#define GET_B(PIXEL) (((PIXEL) & 0x001f) >> 0)
-			#endif
-
-			#elif defined(USE_16BPP)
-				#define PIXEL(R, G, B) (((R) << 11) | ((G) << 5) | (B))
-				#define GET_R(PIXEL) (((PIXEL) & 0xf800) >> 11)
-				#define GET_G(PIXEL) (((PIXEL) & 0x07e0) >> 5)
-				#define GET_B(PIXEL) (((PIXEL) & 0x001f) >> 0)
-
-			#elif defined(USE_32BPP)
-				#define PIXEL(R, G, B) ((0xff << 24) | ((R) << 16) | ((G) << 8) | (B))
-				#define GET_R(PIXEL) (((PIXEL) & 0xff0000) >> 16)
-				#define GET_G(PIXEL) (((PIXEL) & 0x00ff00) >> 8)
-				#define GET_B(PIXEL) (((PIXEL) & 0x0000ff) >> 0)
-			#endif
 		#endif
 
+		#if defined(USE_15BPP)
+		#define USE_15BPP
+		#else
+        	#define PIXEL(R, G, B) ((1 << 15) | ((B) << 10) | ((G) << 5) | (R))
+        	#define GET_B(PIXEL) (((PIXEL) & 0x7c00) >> 10)
+        #define GET_G(PIXEL) (((PIXEL) & 0x03e0) >> 5)
+        #define GET_R(PIXEL) (((PIXEL) & 0x001f) >> 0)
+    #endif
+
+	#if defined(USE_16BPP)
+		#define USE_16BPP
+	#else
+    	#define PIXEL(R, G, B) (((R) << 11) | ((G) << 5) | (B))
+    	#define GET_R(PIXEL) (((PIXEL) & 0xf800) >> 11)
+    	#define GET_G(PIXEL) (((PIXEL) & 0x07e0) >> 5)
+    	#define GET_B(PIXEL) (((PIXEL) & 0x001f) >> 0)
+
+	#endif
+
+	#if defined(USE_32BPP)
+	#define USE_32BPP
+		#else
+    	#define PIXEL(R, G, B) ((0xff << 24) | ((R) << 16) | ((G) << 8) | (B))
+    	#define GET_R(PIXEL) (((PIXEL) & 0xff0000) >> 16)
+    	#define GET_G(PIXEL) (((PIXEL) & 0x00ff00) >> 8)
+    	#define GET_B(PIXEL) (((PIXEL) & 0x0000ff) >> 0)
+
+	#endif
+
+		
+		typedef struct VDP_BASE
+		{
+			
+
+		} VDP_BASE;
 
 		typedef struct VDP_BITMAP
 		{
@@ -117,8 +131,16 @@
 			int PREV_W;
 			int PREV_H;
 			int CHANGED;
-			
+
 		} VDP_BITMAP;
+
+		typedef struct VDP_PLANE
+		{
+			U8 LEFT;
+			U8 RIGHT;
+			U8 ENABLED;
+
+		} VDP_PLANE;
 
 		//===============================================================
 		//						GLOBAL DEFINITIONS
@@ -126,6 +148,11 @@
 
 		void RENDER_INIT(void);
 		void RENDER_RESET(void);
+		void PALETTE_INIT(void);
+		void(*RENDER_BG)(int LINE);
+		void(*RENDER_OBJ)(int LINE);
+		void(*UPDATE_BG_CACHE)(int INDEX);
 
+#endif
 #endif
 #endif
