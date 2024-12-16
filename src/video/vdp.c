@@ -22,6 +22,9 @@
 
 #undef USE_VDP
 
+static U8 PIXEL[0x100];
+static U8 PIXEL_LUT[3][0x200];
+static U8 PIXEL_LUT_MODE[0x40];
 
 //================================================
 //           VDP INITIAL CO-ROUTINES
@@ -41,5 +44,31 @@ void RENDER_INIT(void)
         {
             INDEX = (BIT_LAYER << 8) | (ADDRESS_LAYER);
         }
+    }
+}
+
+/* INITIALISES MODE 5 SUPPORT FOR PALETTE DEFINITION */
+/* READS LITTLE ENDIAN INTO THE CRAM LOOKUP TABLE TO INITILAISE BASE COLOUR */
+
+void PALETTE_INIT(void)
+{
+    int R, G, B, I;
+
+    for(I = 0; I < 0x200; I++)
+    {
+        R = (I >> 0) & 7;
+        G = (I >> 3) & 7;
+        B = (I >> 6) & 7;
+
+        // ALL OF THE BITS PER PIXEL - WHY NOT?
+
+        #undef USE_8BPP
+        #undef USE_15BPP
+        #undef USE_16BPP
+        #undef USE_32BPP
+
+        PIXEL_LUT[0][I] = PIXEL(R, G, B);
+        PIXEL_LUT[1][I] = PIXEL(R, G, B);
+        PIXEL_LUT[2][I] = PIXEL(R, G, B);
     }
 }
