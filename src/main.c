@@ -1,16 +1,7 @@
-/* COPYRIGHT (C) HARRY CLARK 2024 */
-/* SEGA MEGA DRIVE EMULATOR */
-
-/* THIS FILE PERTAINS TOWARDS THE MAIN FUNCTIONALITY OF THE PROGRAM */
-
-/* SYSTEM INCLUDES */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <SDL2/SDL.h>
-
-/* NESTED INCLUDES */
 
 #include "md.h"
 #include "cartridge.h"
@@ -74,11 +65,23 @@ void INIT_CHIPS(struct CPU_68K* CPU)
     printf("Chipset Structs initialised.\n");
 }
 
+void PREPARE_STRUCTS(void)
+{
+    MD* CONSOLE = (MD*)malloc(sizeof(MD));
+    memset(CONSOLE, 0, sizeof(MD));
+
+    CPU_68K* CPU = (CPU_68K*)malloc(sizeof(CPU_68K));
+    memset(CPU, 0, sizeof(CPU_68K));
+
+    CONSOLE->MD_CART = (MD_CART*)malloc(sizeof(MD_CART));
+    memset(CONSOLE->MD_CART, 0, sizeof(MD_CART));
+}
+
 int main(int argc, char* argv[]) 
 {
     if (argc < 2) 
     {
-        printf("Usage: %s <ROM_PATH>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <ROM_PATH>\n", argv[0]);
         return -1;
     }
 
