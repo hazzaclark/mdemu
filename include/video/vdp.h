@@ -65,8 +65,49 @@
 					) :									\
 					(*(U32*)(ADDRESS) = DATA) 
 
+		//===============================================================
+		//					BITS PER PIXEL DEFINTIONS 
+		//===============================================================
 
+		#if defined(USE_8BPP)
+			#define PIXEL(R, G, B) (((R) << 5) | ((G) << 2) | (B))
+			#define GET_R(PIXEL) (((PIXEL) & 0xe0) >> 5)
+			#define GET_G(PIXEL) (((PIXEL) & 0x1c) >> 2)
+			#define GET_B(PIXEL) (((PIXEL) & 0x03) >> 0)
+
+			#elif defined(USE_15BPP)
+				#if defined(USE_ABGR)
+					#define PIXEL(R, G, B) ((1 << 15) | ((B) << 10) | ((G) << 5) | (R))
+					#define GET_B(PIXEL) (((PIXEL) & 0x7c00) >> 10)
+					#define GET_G(PIXEL) (((PIXEL) & 0x03e0) >> 5)
+					#define GET_R(PIXEL) (((PIXEL) & 0x001f) >> 0)
+					#else
+					#define PIXEL(R, G, B) ((1 << 15) | ((R) << 10) | ((G) << 5) | (B))
+					#define GET_R(PIXEL) (((PIXEL) & 0x7c00) >> 10)
+					#define GET_G(PIXEL) (((PIXEL) & 0x03e0) >> 5)
+					#define GET_B(PIXEL) (((PIXEL) & 0x001f) >> 0)
+			#endif
+
+			#elif defined(USE_16BPP)
+				#define PIXEL(R, G, B) (((R) << 11) | ((G) << 5) | (B))
+				#define GET_R(PIXEL) (((PIXEL) & 0xf800) >> 11)
+				#define GET_G(PIXEL) (((PIXEL) & 0x07e0) >> 5)
+				#define GET_B(PIXEL) (((PIXEL) & 0x001f) >> 0)
+
+			#elif defined(USE_32BPP)
+				#define PIXEL(R, G, B) ((0xff << 24) | ((R) << 16) | ((G) << 8) | (B))
+				#define GET_R(PIXEL) (((PIXEL) & 0xff0000) >> 16)
+				#define GET_G(PIXEL) (((PIXEL) & 0x00ff00) >> 8)
+				#define GET_B(PIXEL) (((PIXEL) & 0x0000ff) >> 0)
+			#endif
 		#endif
+
+		//===============================================================
+		//						GLOBAL DEFINITIONS
+		//===============================================================
+
+		void RENDER_INIT(void);
+		void RENDER_RESET(void);
 
 #endif
 #endif
