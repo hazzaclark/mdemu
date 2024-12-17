@@ -9,7 +9,6 @@
 
 /* https://wiki.megadrive.org/index.php?title=VDP */
 /* http://md.railgun.works/index.php?title=VDP */
- 			U16 PAL;
 
 /* NESTED INCLUDES */
 
@@ -112,3 +111,20 @@ void VDP_INIT(void)
         VDP->SET_IRQ = M68K_SET_SR_IRQ;
     }
 }
+
+void RENDER_LINE(int LINE)
+{
+    if(VDP->VDP_REG[1] & 0x40)
+    {
+        RENDER_BG(LINE);
+        RENDER_OBJ(LINE & 1);
+    }
+
+    if(VDP->VDP_REG[0] & 0x20)
+    {
+        memset(&PIXEL_LINE_BUFFER[0][0x20], 0x40, 8);
+    }
+
+
+}
+
