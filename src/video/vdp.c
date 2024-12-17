@@ -38,6 +38,45 @@ void(*UPDATE_BG_CACHE)(int INDEX);
 //           VDP INITIAL CO-ROUTINES
 //================================================
 
+void VDP_INIT(void)
+{
+    // PAL AND NTSC TIMING
+    // NTSC - 313
+    // PAL - 262
+
+    VDP->LINES_PER_FRAME = VDP->VDP_PAL ? 313 : 262;
+
+    // DETERMINE THE SYSTEM TYPE AND SET THE CONCURRENT 
+    // IRQ FROM THE VDP TO THE 68K - MAKING SURE THEY MATCH
+
+    if((!SYSTEM_MD))
+    {
+        VDP->SET_IRQ = M68K_SET_SR_IRQ;
+    }
+}
+
+void VDP_RESET(void)
+{
+    memset((char*) VDP->SPRITE_TABLE, 0, sizeof(VDP->SPRITE_TABLE));
+    memset((char*) VDP->VRAM, 0, sizeof(VDP->VRAM));
+    memset((char*) VDP->CRAM, 0, sizeof(VDP->CRAM));
+    memset((char*) VDP->VSRAM, 0, sizeof(VDP->VSRAM));
+    memset((char*) VDP->VDP_REG, 0, sizeof(VDP->VDP_REG));
+
+    VDP->HINT = 0;
+    VDP->VINT = 0;
+    VDP->DMA_LEN = 0;
+    VDP->DMA_TYPE = 0;
+    VDP->DMA_END_CYCLES = 0;
+
+    VDP->A_BASE = 0;
+    VDP->B_BASE = 0;
+    VDP->W_BASE = 0;
+    VDP->SPRITE_TABLE = 0;
+    VDP->HORI_SCROLL = 0;
+
+}
+
 void RENDER_INIT(void)
 {
     int BIT_LAYER, ADDRESS_LAYER;
@@ -95,22 +134,6 @@ void PALETTE_INIT(void)
     }
 }
 
-void VDP_INIT(void)
-{
-    // PAL AND NTSC TIMING
-    // NTSC - 313
-    // PAL - 262
-
-    VDP->LINES_PER_FRAME = VDP->VDP_PAL ? 313 : 262;
-
-    // DETERMINE THE SYSTEM TYPE AND SET THE CONCURRENT 
-    // IRQ FROM THE VDP TO THE 68K - MAKING SURE THEY MATCH
-
-    if((!SYSTEM_MD))
-    {
-        VDP->SET_IRQ = M68K_SET_SR_IRQ;
-    }
-}
 
 void RENDER_LINE(int LINE)
 {
@@ -124,7 +147,4 @@ void RENDER_LINE(int LINE)
     {
         memset(&PIXEL_LINE_BUFFER[0][0x20], 0x40, 8);
     }
-
-
 }
-
