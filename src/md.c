@@ -44,9 +44,9 @@ void MD_INIT(void)
 
     for (int i = 0xC; i < 0xFF; i++)
     {
-        CPU->MEMORY_MAP[i].MEMORY_READ_8 =  VDP_READ_BYTE;
+        CPU->MEMORY_MAP[i].MEMORY_READ_8 =  CTRL_READ_BYTE;
         CPU->MEMORY_MAP[i].MEMORY_WRITE_8 = M68K_WRITE_8;
-        CPU->MEMORY_MAP[i].MEMORY_READ_16 = VDP_READ_WORD;
+        CPU->MEMORY_MAP[i].MEMORY_READ_16 = CTRL_READ_WORD;
         CPU->MEMORY_MAP[i].MEMORY_WRITE_16 = M68K_WRITE_16;
     }
 
