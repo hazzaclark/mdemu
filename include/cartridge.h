@@ -34,27 +34,32 @@ typedef struct ROM_INFO
     char SERIAL[14];
     
     unsigned short CHECKSUM;
-    unsigned int ROM_START;
-    unsigned int ROM_END;
+    unsigned int START;
+    unsigned int END;
     unsigned char REGION[18];
 
     S16* PERIPHERALS;
 
 } ROM_INFO;
 
-#define             ROM_CONSOLE_TYPE            ROM_INFO_BASE->TYPE
-#define             ROM_COPYRIGHT               ROM_INFO_BASE->COPYRIGHT
-#define             ROM_DOMESTIC_NAME           ROM_INFO_BASE->DOMESTIC
-#define             ROM_INTERNATIONAL_NAME      ROM_INFO_BASE->INTERNATIONAL
-#define             ROM_TYPE                    ROM_INFO_BASE->ROM_TYPE
-#define             ROM_SERIAL_NO               ROM_INFO_BASE->SERIAL
-#define             ROM_CHECKSUM                ROM_INFO_BASE->CHECKSUM
-#define             ROM_START                   ROM_INFO_BASE->ROM_START
-#define             ROM_END                     ROM_INFO_BASE->ROM_END
-#define             ROM_REGION                  ROM_INFO_BASE->REGION
-#define             ROM_EXT                     ROM_INFO_BASE->PERIPHERALS
+/* HARD CODED PRE-PROCESSOR DIRECTIVES FOR THE BITWISE VALUE OF HEADER INFORMATION */
+/* OF A TRADITIONAL MEGA DRIVE HEADER */
 
-ROM_INFO* ROM_INFO_BASE;
+#define         ROM_TYPE            384
+#define         ROM_COPYRIGHT       272
+#define         ROM_DOMESTIC        288
+#define         ROM_INTERNATIONAL   336
+#define         ROM_SERIAL          386
+#define         ROM_CHECKSUM        398
+#define         ROM_START           416
+#define         ROM_END             440
+#define         ROM_REGION          496
+#define         MD_ROM_NAME_LEN      256
+
+U16 GET_CHECKSUM(U8* ROM, unsigned LENGTH, char* FILENAME);
+void MD_ROM_CHECKER(U8* SRC);
+void MD_GET_ROM_INFO(char* HEADER);
+int MD_LOAD_ROM(char* FILENAME);
 
 #endif
 #endif
