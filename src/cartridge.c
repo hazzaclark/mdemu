@@ -115,8 +115,31 @@ void MD_GET_ROM_INFO(char* HEADER)
           break;
     }
 
-
     free(ROM);
+}
+
+/* LOAD ROM INTO THE CURRENT BUFFER BASED ON THE SIZE OF THE CURRENT STRUCT */
+/* OF THE ROM ITSELF */
+
+int MD_LOAD_ROM(char* FILENAME)
+{
+    char* ROM_MAX_FILENAME = malloc(MD_ROM_NAME_LEN);
+    U8 SYS_TYPE = 0;
+    struct MD_CART* CART = malloc(sizeof(struct MD_CART));
+
+    /* EVALUATE THE SIZE AND STORE IT IN THE ROM INFO */
+
+    CART->ROM_SIZE = 0x8000000;
+    CART->ROM_BASE = sizeof(char*);
+    MD_GET_ROM_INFO((char *)CART->ROM_BASE);
+
+    if((SYS_TYPE == SYSTEM_MD) && (CART->ROM_SIZE <= 0x8000000))
+    {
+        strncpy(ROM_MAX_FILENAME, FILENAME, MD_ROM_NAME_LEN - 1);
+        ROM_MAX_FILENAME[MD_ROM_NAME_LEN - 1] = '\0';
+    }
+
+    return 0;
 }
 
 #endif
