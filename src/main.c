@@ -47,8 +47,6 @@ int MD_CART_LOAD(char* FILENAME, MD_CART* CART)
 
     GET_CHECKSUM(CART->ROM_DATA, SIZE, FILENAME);
 
-    RENDER_INIT();
-
     fclose(ROM);
     printf("ROM Loaded Successfully. Size: %lu bytes\n", SIZE);
 
@@ -57,14 +55,19 @@ int MD_CART_LOAD(char* FILENAME, MD_CART* CART)
 
 void INIT_CHIPS(struct CPU_68K* CPU) 
 {
-    memset(CPU, 0, sizeof(struct CPU_68K));
-    printf("Chipset Structs initialised.\n");
+    CPU = malloc(sizeof(struct CPU_68K));
+
+    if(CPU != NULL)
+    {
+        printf("CPU initialised: %p\n", (void*)CPU);
+    }
 }
 
 int main(int argc, char* argv[]) 
 {
     if (argc < 2) 
     {
+        printf("HARRY CLARK - SEGA MEGA DRIVE EMULATOR\n");
         fprintf(stderr, "Usage: %s <ROM_PATH>\n", argv[0]);
         return -1;
     }
@@ -88,13 +91,11 @@ int main(int argc, char* argv[])
     MD* CONSOLE = (MD*)malloc(sizeof(MD));
     memset(CONSOLE, 0, sizeof(MD));
 
-    CPU_68K* CPU = (CPU_68K*)malloc(sizeof(CPU_68K));
-    memset(CPU, 0, sizeof(CPU_68K));
-
     CONSOLE->MD_CART = (MD_CART*)malloc(sizeof(MD_CART));
     memset(CONSOLE->MD_CART, 0, sizeof(MD_CART));
 
     INIT_CHIPS(CPU);
+    RENDER_INIT();
 
     if (MD_CART_LOAD((char*)ROM_PATH, CONSOLE->MD_CART) != 0) 
     {
