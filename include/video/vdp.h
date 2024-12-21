@@ -112,6 +112,9 @@
 		
 		typedef struct VDP_BASE
 		{
+			U8 VRAM[0x10000];
+			U8 VSRAM[0x80];
+			U8 CRAM[0x80];
 			U8 VDP_REG[0x20];
 			U8 HINT;
 			U8 VINT;
@@ -131,6 +134,9 @@
 			U16 PAL;
 			U16 LINES_PER_FRAME;
 			U32 VINT_CYCLES;
+
+			void(*SET_IRQ)(unsigned LEVEL);
+			void(*SET_IRQ_DELAY)(unsigned LEVEL);
 
 		} VDP_BASE;
 
