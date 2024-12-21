@@ -57,11 +57,11 @@ void VDP_INIT(void)
 
 void VDP_RESET(void)
 {
-    memset((char*) VDP->SPRITE_TABLE, 0, sizeof(VDP->SPRITE_TABLE));
-    memset((char*) VDP->VRAM, 0, sizeof(VDP->VRAM));
-    memset((char*) VDP->CRAM, 0, sizeof(VDP->CRAM));
-    memset((char*) VDP->VSRAM, 0, sizeof(VDP->VSRAM));
-    memset((char*) VDP->VDP_REG, 0, sizeof(VDP->VDP_REG));
+    memset(VDP->SPRITE_TABLE, 0, sizeof(VDP->SPRITE_TABLE));
+    memset(*(char*) VDP->VRAM, 0, sizeof(VDP->VRAM));
+    memset(*(char*) VDP->CRAM, 0, sizeof(VDP->CRAM));
+    memset(*(char*) VDP->VSRAM, 0, sizeof(VDP->VSRAM));
+    memset(*(char*) VDP->VDP_REG, 0, sizeof(VDP->VDP_REG));
 
     VDP->HINT = 0;
     VDP->VINT = 0;
