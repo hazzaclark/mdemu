@@ -44,7 +44,7 @@ void VDP_INIT(void)
     // NTSC - 313
     // PAL - 262
 
-    VDP->LINES_PER_FRAME = VDP->VDP_PAL ? 313 : 262;
+    VDP->LINES_PER_FRAME = VDP->VDP_PAL ? VDP_NTSC_TIMING : VDP_PAL_TIMING;
 
     // DETERMINE THE SYSTEM TYPE AND SET THE CONCURRENT 
     // IRQ FROM THE VDP TO THE 68K - MAKING SURE THEY MATCH
@@ -82,6 +82,14 @@ void RENDER_INIT(void)
     int BIT_LAYER, ADDRESS_LAYER;
     U16 INDEX;
 
+    VDP = malloc(sizeof(struct VDP_BASE));
+
+    if(VDP == NULL)
+    {
+        perror("Memory Allocation failed for VDP\n");
+        exit(EXIT_FAILURE);
+    }
+
     /* INITIALISE THE PRIORITY OF LAYERS WITHIN THE PIXEL LOOK UP TABLES */
     /* READ A LITTLE ENDIAN INTO THE LOOKUP VALUE */
 
@@ -94,6 +102,7 @@ void RENDER_INIT(void)
     }
 
     PALETTE_INIT();
+    printf("Render initialised %p\n", (void*)VDP);
 }
 
 void RENDER_RESET()
