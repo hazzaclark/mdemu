@@ -1,0 +1,46 @@
+/* COPYRIGHT (C) HARRY CLARK 2024 */
+
+/* SEGA MEGA DRIVE EMULATOR */
+
+/* THIS FILE PERTAINS TOWARDS THE VIDEO SCHEMA IN CONJUNCTION WITH THE VDP */
+
+#ifndef VIDEO_H
+#define VIDEO_H
+
+/* NESTED INCLUDES */
+
+#include "common.h"
+
+/* SYSTEM INCLUDES */
+
+#include <stdio.h>
+#include <string.h>
+
+#include <SDL2/SDL.h>
+
+#define             VIDEO_WIDTH         320
+#define             VIDEO_HEIGHT        240
+
+static struct SDL_BASE
+{   
+    SDL_Window* VIDEO_WINDOW;
+    SDL_Renderer* VIDEO_RENDERER;
+    SDL_Texture* VIDEO_TEXTURE;
+
+    U32* VIDEO_COUNTER;
+    U32* VIDEO_COUNTER_W;
+    U64 VIDEO_CYCLES;
+    U64 VIDEO_FRAMES;
+
+    U32 VIDEO_BUFFER[VIDEO_HEIGHT][VIDEO_WIDTH];
+    U32 VIDEO_CURR[VIDEO_HEIGHT][VIDEO_WIDTH];
+    U8 VIDEO_FILE[VIDEO_HEIGHT][VIDEO_WIDTH][3];
+
+    SDL_mutex* VIDEO_MUTEX;
+
+} SDL_BASE;
+
+void VIDEO_INIT(void);
+int VIDEO_UPDATE(int STATUS);
+
+#endif
