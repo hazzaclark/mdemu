@@ -32,6 +32,7 @@ static VDP_BITMAP* VDP_BMP;
 
 void(*RENDER_BG)(int LINE);
 void(*RENDER_OBJ)(int LINE);
+void(*PARSE_SPRITE_TABLE)(int LINE);
 void(*UPDATE_BG_CACHE)(int INDEX);
 
 //================================================
@@ -40,6 +41,15 @@ void(*UPDATE_BG_CACHE)(int INDEX);
 
 void VDP_INIT(void)
 {
+    VDP = malloc(sizeof(struct VDP_BASE));
+
+    if(VDP == NULL)
+    {
+        perror("Memory Allocation failed for VDP\n");
+        exit(EXIT_FAILURE);
+    }
+
+
     // PAL AND NTSC TIMING
     // NTSC - 313
     // PAL - 262
@@ -82,14 +92,6 @@ void RENDER_INIT(void)
     int BIT_LAYER, ADDRESS_LAYER;
     U16 INDEX;
 
-    VDP = malloc(sizeof(struct VDP_BASE));
-
-    if(VDP == NULL)
-    {
-        perror("Memory Allocation failed for VDP\n");
-        exit(EXIT_FAILURE);
-    }
-
     /* INITIALISE THE PRIORITY OF LAYERS WITHIN THE PIXEL LOOK UP TABLES */
     /* READ A LITTLE ENDIAN INTO THE LOOKUP VALUE */
 
@@ -101,8 +103,9 @@ void RENDER_INIT(void)
         }
     }
 
+    VDP_INIT();
     PALETTE_INIT();
-    printf("Render initialised %p\n", (void*)VDP);
+    printf("Render initialised: %p\n", (void*)VDP);
 }
 
 void RENDER_RESET()
@@ -146,14 +149,40 @@ void PALETTE_INIT(void)
 
 void RENDER_LINE(int LINE)
 {
+    // CHECK IF THE DISPLAY FLAG HAS BEEN SET ACCORDING TO
+    // THE REGISTER VALUE
+
     if(VDP->VDP_REG[1] & 0x40)
     {
         RENDER_BG(LINE);
         RENDER_OBJ(LINE & 1);
     }
 
+    // CHECK THE LEFT MOST COLUMN TO INIT THE V AND HBLANK
+
     if(VDP->VDP_REG[0] & 0x20)
     {
         memset(&PIXEL_LINE_BUFFER[0][0x20], 0x40, 8);
     }
+
+    // PARSE SPRITES FOR THE NEXT LINE
+
+    if(LINE < (VDP_BMP->H - 1))
+    {
+        PARSE_SPRITE_TABLE(LINE);
+    }
+
+    // CHECK FOR THE HORIZONTAL BORDERS OF THE VIEW
+
+    if(VDP_BMP->X > 0)
+    {
+        memset(&PIXEL_LINE_BUFFER[0][0x20 - VDP_BMP->X], 0x40, VDP_BMP->X);
+        memset(&PIXEL_LINE_BUFFER[0][0x20 + VDP_BMP->W], 0x40, VDP_BMP->W);
+         
+    }
+
+    // IF THE FIRST LINE HASNT BEEN RENDERED
+
+    memset(&PIXEL_LINE_BUFFER[0][0x20 - VDP_BMP->X], 0x40, VDP_BMP->W + 2 * VDP_BMP->X);
+    REMAP_LINE(LINE);
 }
