@@ -39,6 +39,9 @@
 
 		#define		VDP_LINE_BUFFER			0x200 * 2
 
+		#define		VDP_NTSC_TIMING			313
+		#define 	VDP_PAL_TIMING			252
+
 		// DEFINE AN ENDIANESS PARSER FOR READING 
 		// AND WRITING CONTENTS TO THE VDP
 
@@ -174,6 +177,16 @@
 		void PALETTE_INIT(void);
 		void VDP_INIT(void);
 		void VDP_RESET(void);
+		void REMAP_LINE(int LINE);
+
+		// ASSUME THAT THESE READ FUNCTIONS WILL BE MODE 5 BY DEFAULT
+
+		void VDP_68K_WRITE(unsigned DATA);
+		void VDP_68K_READ(void);
+		void VDP_Z80_WRITE(unsigned DATA);
+		void VDP_Z80_READ(void);
+
+		void VDP_HV_READ(unsigned CYCLES);
 
 #endif
 #endif
