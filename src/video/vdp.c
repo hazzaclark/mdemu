@@ -221,9 +221,18 @@ void VDP_HV_READ(unsigned CYCLES)
     CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
     DATA,
     0xFFFF,                           // MASK
-    M68K_REG_PC                       
-);
-    }           
+    M68K_REG_PC);
 
+    // RETURN THE LATCHED VALUE
 
+    return (DATA & 0xFFFF);
+
+    }
+
+    else
+    {
+        // DRAW THE LATEST DATA FROM THE HCOUNTER BASED ON THE CONCURRENT CYCLES
+
+        DATA = VDP->H_COUNTER_TABLE[CYCLES % VDP_MAX_CYCLES_PER_LINE];
+    }
 }
