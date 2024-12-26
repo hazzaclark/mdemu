@@ -35,6 +35,7 @@ void(*RENDER_OBJ)(int LINE);
 void(*PARSE_SPRITE_TABLE)(int LINE);
 void(*UPDATE_BG_CACHE)(int INDEX);
 
+
 //================================================
 //           VDP INITIAL CO-ROUTINES
 //================================================
@@ -205,7 +206,7 @@ void REMAP_LINE(int LINE)
 // READ THE CORRESPONDING INFO BEING PASSED THROUGH THE 
 // HORIZONTAL AND VERTICAL COUNTERS
 
-void VDP_HV_READ(unsigned CYCLES)
+int VDP_HV_READ(unsigned CYCLES)
 {
     int COUNTER = 0;
     unsigned DATA = VDP->HV_LATCH;
@@ -214,18 +215,18 @@ void VDP_HV_READ(unsigned CYCLES)
 
     if(DATA && (VDP->VDP_REG[1] & 0x04))
     {
-        VDP_ERROR("[%d(%d)][%d(%d)] HVC LATCH READ - 0x%x (%x)\n", 
+        fprintf("[%d(%d)][%d(%d)] HVC LATCH READ - 0x%x (%x)\n", 
         VDP->V_COUNTER,  // CURRENT COUNTER VALUE
                         // ADJUSTED COUNTER VAL
-    (VDP->V_COUNTER + CYCLES - VDP->VDP_CYCLES / VDP_MAX_CYCLES_PER_LINE) % VDP->LINES_PER_FRAME,
-    CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
-    DATA,
-    0xFFFF,                           // MASK
-    M68K_REG_PC);
+        (VDP->V_COUNTER + CYCLES - VDP->VDP_CYCLES / VDP_MAX_CYCLES_PER_LINE) % VDP->LINES_PER_FRAME,
+        CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
+        DATA,
+        0xFFFF,                           // MASK
+        M68K_REG_PC);
 
-    // RETURN THE LATCHED VALUE
+        // RETURN THE LATCHED VALUE
 
-    return (DATA & 0xFFFF);
+        return (DATA & 0xFFFF);
 
     }
 
@@ -235,4 +236,27 @@ void VDP_HV_READ(unsigned CYCLES)
 
         DATA = VDP->H_COUNTER_TABLE[CYCLES % VDP_MAX_CYCLES_PER_LINE];
     }
+
+    COUNTER = VDP->V_COUNTER;
+
+    // CHECK IF THE CURRENT AMOUNT OF CYCLES CORRESPONDS WITH THE MAX CYCLES
+
+    if((CYCLES - VDP->VDP_CYCLES)) { COUNTER = COUNTER + 1 % VDP_MAX_CYCLES_PER_LINE; }
+
+    // RETURN H COUNTER IN LITTLE ENDIAN
+    // RETURN V COUNTER VICE VERSA
+
+    DATA |= ((COUNTER & 0xFF) >> 8);
+
+    printf("[%d(%d)][%d(%d)] HVC READ - 0x%x (%x)\n", 
+        VDP->V_COUNTER,  // CURRENT COUNTER VALUE
+                        // ADJUSTED COUNTER VAL
+        (VDP->V_COUNTER + CYCLES - VDP->VDP_CYCLES / VDP_MAX_CYCLES_PER_LINE) % VDP->LINES_PER_FRAME,
+        CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
+        DATA,
+        0xFFFF,                           // MASK
+        M68K_REG_PC);
+
+
+    return DATA;
 }
