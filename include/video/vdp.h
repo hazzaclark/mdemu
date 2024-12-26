@@ -134,10 +134,16 @@
 			U8 VDP_PAL;
 			U8 H_COUNTER;
 			U16 V_COUNTER;
+			U16 VC_MAX;
 			U16 PAL;
 			U16 LINES_PER_FRAME;
 			U32 VINT_CYCLES;
 
+			U32 HV_LATCH;
+			U32 FIFO_CYCLES[4];
+
+			U8* H_COUNTER_TABLE; 
+			
 			void(*SET_IRQ)(unsigned LEVEL);
 			void(*SET_IRQ_DELAY)(unsigned LEVEL);
 
