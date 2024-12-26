@@ -102,10 +102,6 @@ void RENDER_INIT(void)
             INDEX += (BIT_LAYER << 8) | (ADDRESS_LAYER);
         }
     }
-
-    VDP_INIT();
-    PALETTE_INIT();
-    printf("Render initialised: %p\n", (void*)VDP);
 }
 
 void RENDER_RESET()
@@ -204,4 +200,30 @@ void REMAP_LINE(int LINE)
 
     U8* DESTINATION = ((U8*)&VDP_BMP->DATA[(LINE * VDP_BMP->PITCH)]);
     *DESTINATION++ = PIXEL[*LINE_SRC_BUFFER]++;
+}
+
+// READ THE CORRESPONDING INFO BEING PASSED THROUGH THE 
+// HORIZONTAL AND VERTICAL COUNTERS
+
+void VDP_HV_READ(unsigned CYCLES)
+{
+    int COUNTER = 0;
+    unsigned DATA = VDP->HV_LATCH;
+
+    // CHECK IF THE HV LATCH HAS BEEN SET/ENABLED
+
+    if(DATA && (VDP->VDP_REG[1] & 0x04))
+    {
+        VDP_ERROR("[%d(%d)][%d(%d)] HVC LATCH READ - 0x%x (%x)\n", 
+        VDP->V_COUNTER,  // CURRENT COUNTER VALUE
+                        // ADJUSTED COUNTER VAL
+    (VDP->V_COUNTER + CYCLES - VDP->VDP_CYCLES / VDP_MAX_CYCLES_PER_LINE) % VDP->LINES_PER_FRAME,
+    CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
+    DATA,
+    0xFFFF,                           // MASK
+    M68K_REG_PC                       
+);
+    }           
+
+
 }
