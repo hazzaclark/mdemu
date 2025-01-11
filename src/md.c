@@ -373,51 +373,6 @@ void MD_CART_MEMORY_MAP(void)
     }
 }
 
-/* ========================================================== */
-/*                  68000 HELPER FUNCTIONS                    */
-/* ========================================================== */
-
-unsigned int M68K_READ_8(unsigned int ADDRESS)
-{
-    int INDEX = 0;
-
-    CPU->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
-
-    return READ_BYTE(CPU->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
-}
-
-unsigned int M68K_READ_16(unsigned int ADDRESS)
-{
-    int INDEX = 0;
-
-    CPU->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
-
-    return READ_WORD(CPU->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
-}
-
-void M68K_WRITE_8(unsigned int ADDRESS, unsigned int DATA)
-{
-    CPU->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
-}
-
-void M68K_WRITE_16(unsigned int ADDRESS, unsigned int DATA)
-{
-    CPU->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
-}
-
-unsigned int M68K_READ_32(unsigned int ADDRESS)
-{
-    int INDEX = 0;
-    CPU->MEMORY_MAP[INDEX].MEMORY_BASE = malloc(0x1000);
-
-    return READ_WORD_LONG(CPU->MEMORY_MAP[((ADDRESS)>>16)&0xFF].MEMORY_BASE, (ADDRESS) & 0xFFFF);
-}
-
-void M68K_WRITE_32(unsigned int ADDRESS, unsigned int DATA)
-{
-    CPU->INSTRUCTION_CYCLES = M68K_CYCLE[M68K_REG_IR] + ADDRESS + DATA;
-}
-
 unsigned int Z80_READ(unsigned int ADDRESS)
 {
     unsigned int DATA = 0;
