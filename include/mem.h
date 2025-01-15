@@ -20,7 +20,6 @@ typedef struct ZBANK_MEM
 
 #if defined(USE_ZBANK_MEM)
     #define USE_ZBANK_MEM
-
 #else
     #define USE_ZBANK_MEM
 
@@ -38,7 +37,18 @@ typedef struct ZBANK_MEM
 
 #endif
 
+#if defined(USE_Z80_MEM)
+    #define USE_Z80_MEM
+#else
+    #define USE_Z80_MEM
 
+    extern unsigned char Z80_MEM_READ(unsigned ADDRESS);
+    extern void Z80_MEM_WRITE(unsigned ADDRESS, unsigned DATA);
+
+    extern unsigned char Z80_MEM_MD_READ(unsigned ADDRESS);
+    extern void Z80_MEM_MD_WRITE(unsigned ADDRESS, char DATA);
+
+#endif
 
 extern ZBANK_MEM ZBANK_MEM_MAP[256];
 
