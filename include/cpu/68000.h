@@ -11,6 +11,8 @@
 
 /* SYSTEM INCLUDES */
 
+#include <68K.h>
+
 #include <assert.h>
 #include <malloc.h>
 #include <stdio.h>
@@ -190,22 +192,7 @@ typedef struct CPU_68K_MEMORY
 
 typedef struct CPU_68K
 {
-    unsigned int* PC;
-    unsigned int* INSTRUCTION_CYCLES;
-    unsigned int* CYCLE_RATE;
-    unsigned int* INSTRUCTION_CYCLES_NULL;
-    unsigned char* MEMORY_BASE;
-	unsigned int** CYCLE_EXCEPTION;
-
-    unsigned(*MEMORY_DATA);
-    unsigned(*MEMORY_ADDRESS);
-    unsigned(*MEMORY_POINTER);
-
-	unsigned(*LOW_ADDR);
-	unsigned(*HIGH_ADDR);
-	void(*USER_DATA);
-
-	unsigned int* STOPPED;
+    
 
     /* PUTTING THE Z80 MEMORY BANK FUNCTIONALITY */
     /* IN HERE FOR NOW UNTIL MODULARISATION WOULD BETTER SUIT */
@@ -420,26 +407,6 @@ typedef enum CPU_68K_FLAGS
 
 #endif
 
-typedef struct OPCODE
-{
-	U16* PATTERN;
-	size_t* OPCODE_SIZE;
-
-	union 
-	{
-		U32 MAIN_REGISTER;
-		U32 INDEX_REGISTER;
-		size_t* OPERAND_SIZE;
-		char LITERAL;
-		bool* IR_TO_AR;
-
-	} OPERAND;
-
-	void(*HANDLER)(void);
-	unsigned int INSTRUCTION;
-	
-} OPCODE;
-
 typedef enum CONDITION
 {
     CONDITION_TRUE,
@@ -632,7 +599,6 @@ typedef enum EA_MODES
 
 #endif
 
-static CPU_68K* CPU;
 extern CPU_68K_REGS CPU_REGS;
 
 void INITIALISE_68K_CYCLES();
@@ -688,45 +654,6 @@ U8 M68K_READ_RAM_BYTE(U32* ADDRESS);
 /* SUCH THAT WE ARE ABLE TO USE THESE FUNCTIONS IN A SINGLE-FORM MANNER LATER ON */
 
 #define 		M68K_LOG_ALINE			M68K_OPT_OFF
-
-
-static inline void M68K_JUMP_VECTOR_MASK()
-{
-	int NEW_VECTOR = 0;
-	M68K_REG_PC = (NEW_VECTOR << 2) + M68K_REG_VBR;
-	M68K_REG_PC = M68K_READ_32(M68K_REG_PC);
-}
-
-static inline void M68K_EXCEPTION_1010(void)
-{
-	M68K_DO_LOG(M68K_LOG_FILEHANDLE "%s at %08x: called 1010 instructions based on %04x (%s)\n");
-
-	M68K_JUMP_VECTOR_MASK(EXCEPTION_1010);
-	M68K_USE_CYCLES(M68K_CYC_EXCE[EXCEPTION_1010] - M68K_REG_IR);	
-}
-
-static inline void M68K_EXCEPTION_1111(void)
-{
-	M68K_DO_LOG(M68K_LOG_FILEHANDLE "%s at %08x: called 1111 instructions based on %04x (%s)\n");
-	
-	M68K_JUMP_VECTOR_MASK(EXCEPTION_1111);
-	M68K_USE_CYCLES(M68K_CYC_EXCE[EXCEPTION_1111] - M68K_REG_IR);
-}
-
-/* DETERMINE THE INITIAL S FLAG BASED ON THE CURRENT DISCERNMENT */
-/* EVALUATE THE FLAGS CURRENT OFFSET IN RELATION TO THE OTHER FLAGS	 */
-
-static inline void M68K_SET_S_FLAG(unsigned VALUE)
-{
-	M68K_FLAG_S = VALUE;
-	M68K_REG_SP = M68K_REG_SP_FULL[M68K_FLAG_S | ((M68K_FLAG_S >> 1) & M68K_FLAG_M)];
-}
-
-static inline int M68K_INIT_EXCEPTION()
-{
-	M68K_FLAG_T0 = M68K_FLAG_T1 = 0;
-	return 0;
-}
 
 #endif
 #endif
