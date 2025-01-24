@@ -12,7 +12,7 @@
 
 /* NESTED INCLUDES */
 
-#include "68000.h"
+#include <68K.h>
 #include "md.h"
 #include "vdp.h"
 #include "common.h"
@@ -222,7 +222,7 @@ int VDP_HV_READ(unsigned CYCLES)
         CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
         DATA,
         0xFFFF,                           // MASK
-        M68K_REG_PC);
+        CPU->PC);
 
         // RETURN THE LATCHED VALUE
 
@@ -255,7 +255,7 @@ int VDP_HV_READ(unsigned CYCLES)
         CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
         DATA,
         0xFFFF,                           // MASK
-        M68K_REG_PC);
+        CPU->PC);
 
 
     return DATA;
@@ -276,7 +276,7 @@ int VDP_HV_READ(unsigned CYCLES)
 void VDP_68K_WRITE(unsigned DATA)
 {
     int PROC_SLOT = 0;
-    unsigned CYCLES = M68K_CYC_INSTRUCTION;
+    unsigned CYCLES = M68K_CYCLES_REMAINING;
 
     // CHECK IF THERE IS ANY AND ALL RESTRICTED WRITE ACCESS
     // THROUGH THIS, CHECK AGAINST LAST FIFO READ OUT CHUNK
