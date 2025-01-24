@@ -1,5 +1,8 @@
+# COPYRIGHT (C) HARRY CLARK 2024
+# SEGA MEGA DRIVE EMULATOR
+
 SRC_DIR             = src
-INC_DIR             = inc
+INC_DIR             = include
 SOUND_DIR           = $(SRC_DIR)/sound
 VIDEO_DIR           = $(SRC_DIR)/video
 
