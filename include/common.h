@@ -61,9 +61,6 @@ typedef volatile F64 VF64;
 #define INLINE inline
 #define STATIC static
 
-void VDP_ERROR(const char* FORMAT, ...);
-void M68K_ERROR(const char* FORMAT, ...);
-
 #endif
 
 #ifdef __cplusplus
