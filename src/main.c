@@ -1,7 +1,15 @@
+/* COPYRIGHT (C) HARRY CLARK 2024 */
+
+/* SEGA MEGA DRIVE EMULATOR */
+
+/* SYSTEM INCLUDES */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <SDL2/SDL.h>
+
+/* NESTED INCLUDES */
 
 #include "md.h"
 #include "cartridge.h"
@@ -94,8 +102,7 @@ int main(int argc, char* argv[])
     CONSOLE->MD_CART = (MD_CART*)malloc(sizeof(MD_CART));
     memset(CONSOLE->MD_CART, 0, sizeof(MD_CART));
 
-    INIT_CHIPS(CPU);
-    RENDER_INIT();
+    INIT_CHIPS(CPU);    
 
     if (MD_CART_LOAD((char*)ROM_PATH, CONSOLE->MD_CART) != 0) 
     {
