@@ -144,6 +144,8 @@
 			U32 VINT_CYCLES;
 
 			U32 HV_LATCH;
+			S32 FIFO_IDX;
+			S32* FIFO_TIMING;
 			U32 FIFO_CYCLES[4];
 			U32 VDP_CYCLES;
 
@@ -197,7 +199,17 @@
 		void VDP_Z80_WRITE(unsigned DATA);
 		void VDP_Z80_READ(void);
 
-		void VDP_HV_READ(unsigned CYCLES);
+		int VDP_HV_READ(unsigned CYCLES);
+
+		void VDP_BUS_WRITE(unsigned DATA);
+		void VDP_REG_WRITE(unsigned REG, unsigned DEST, unsigned CYCLES);
+
+		void VDP_DMA_68K_EXT(unsigned LEN);
+		void VDP_DMA_68K_RAM(unsigned LEN);
+		void VDP_DMA_68K_IO(unsigned LEN);
+		void VDP_DMA_COPY(unsigned LEN);
+		void VDP_DMA_FILL(unsigned LEN);
+
 
 #endif
 #endif
