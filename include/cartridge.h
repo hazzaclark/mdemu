@@ -10,7 +10,6 @@
 /* NESTED INCLUDES */
 
 #include "common.h"
-#include "68000.h"
 #include "md.h"
 
 /* SYSTEM INCLUDES */
