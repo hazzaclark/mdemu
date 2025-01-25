@@ -222,7 +222,7 @@ int VDP_HV_READ(unsigned CYCLES)
         CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
         DATA,
         0xFFFF,                           // MASK
-        CPU->PC);
+        CPU.PC);
 
         // RETURN THE LATCHED VALUE
 
@@ -255,7 +255,7 @@ int VDP_HV_READ(unsigned CYCLES)
         CYCLES % VDP_MAX_CYCLES_PER_LINE,  // CURRENT CYCLE
         DATA,
         0xFFFF,                           // MASK
-        CPU->PC);
+        CPU.PC);
 
 
     return DATA;
