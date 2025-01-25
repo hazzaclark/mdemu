@@ -289,7 +289,7 @@ unsigned int Z80_READ(unsigned int ADDRESS)
 {
     unsigned int DATA = 0;
 
-    CPU->INSTRUCTION_CYCLES = malloc(M68K_LOW_BITMASK);
+    CPU.INSTRUCTION_CYCLES = malloc(M68K_LOW_BITMASK);
 
     switch((ADDRESS >> 13) & 3)
     {
