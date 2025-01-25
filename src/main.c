@@ -102,13 +102,12 @@ int main(int argc, char* argv[])
     CONSOLE->MD_CART = (MD_CART*)malloc(sizeof(MD_CART));
     memset(CONSOLE->MD_CART, 0, sizeof(MD_CART));
 
-    INIT_CHIPS(CPU);    
+    INIT_CHIPS(&CPU);    
 
     if (MD_CART_LOAD((char*)ROM_PATH, CONSOLE->MD_CART) != 0) 
     {
         printf("Failed to load ROM from: %s\n", ROM_PATH);
         free(CONSOLE->MD_CART);
-        free(CPU);
         free(CONSOLE);
         return -1;
     }
@@ -133,7 +132,6 @@ int main(int argc, char* argv[])
     }
     
     free(CONSOLE->MD_CART);
-    free(CPU);
     free(CONSOLE);
 
     SDL_DestroyRenderer(RENDERER);
