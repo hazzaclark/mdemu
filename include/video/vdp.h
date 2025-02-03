@@ -199,6 +199,12 @@
 		void VDP_Z80_WRITE(unsigned DATA);
 		void VDP_Z80_READ(void);
 
+		unsigned VDP_READ_BYTE(unsigned ADDRESS);
+		void VDP_WRITE_BYTE(unsigned ADDRESS, unsigned DATA);
+		unsigned VDP_READ_WORD(unsigned ADDRESS);
+		void VDP_WRITE_WORD(unsigned ADDRESS, unsigned DATA);
+
+
 		int VDP_HV_READ(unsigned CYCLES);
 
 		void VDP_BUS_WRITE(unsigned DATA);
@@ -209,7 +215,6 @@
 		void VDP_DMA_68K_IO(unsigned LEN);
 		void VDP_DMA_COPY(unsigned LEN);
 		void VDP_DMA_FILL(unsigned LEN);
-
 
 #endif
 #endif
