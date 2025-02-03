@@ -35,6 +35,12 @@ void(*RENDER_OBJ)(int LINE);
 void(*PARSE_SPRITE_TABLE)(int LINE);
 void(*UPDATE_BG_CACHE)(int INDEX);
 
+unsigned(*VDP_DATA_R)(void);
+void(*VDP_DATA_W)(void);
+
+unsigned(*VDP_CTRL_R)(unsigned CYCLES);
+void(*VDP_CTRL_W)(unsigned DATA);
+
 
 //================================================
 //           VDP INITIAL CO-ROUTINES
@@ -315,4 +321,30 @@ void VDP_BUS_WRITE(unsigned DATA)
     // INIT THE FIFO CYCLES BASED ON THE CURRENT DATA BEING PASSED
 
     VDP->FIFO_CYCLES[VDP->FIFO_IDX] = DATA;
+}
+
+unsigned VDP_READ_BYTE(unsigned ADDRESS)
+{
+    switch(ADDRESS & 0xFD)
+    {
+        case 0x00:
+        {
+            return (VDP_DATA_R() >> 8);
+        }
+
+        case 0x01:
+        {
+            return (VDP_DATA_R() & 0xFF);
+        }
+
+        case 0x04:
+        {
+            unsigned DATA = (VDP_CTRL_R(M68K_CYCLE) >> 8);
+            ADDRESS = M68K_REG_PC;
+            return DATA;
+        }
+
+        default:
+            return M68K_READ_8(ADDRESS);
+    }
 }
