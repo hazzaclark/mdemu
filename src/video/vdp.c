@@ -344,6 +344,17 @@ unsigned VDP_READ_BYTE(unsigned ADDRESS)
             return DATA;
         }
 
+        case 0x05:
+        {
+            return (VDP_CTRL_R(M68K_CYCLE) & 0xFF);
+        }
+
+        case 0x08:
+        case 0x0C:
+        {
+            return (VDP_HV_READ(M68K_CYCLE) >> 8);
+        }
+
         default:
             return M68K_READ_8(ADDRESS);
     }
