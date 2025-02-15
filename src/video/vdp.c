@@ -355,7 +355,77 @@ unsigned VDP_READ_BYTE(unsigned ADDRESS)
             return (VDP_HV_READ(M68K_CYCLE) >> 8);
         }
 
+        case 0x09:
+        case 0x0D:
+        {
+            return (VDP_HV_READ(M68K_CYCLE) & 0xFF);
+        }
+
         default:
             return M68K_READ_8(ADDRESS);
+    }
+}
+
+unsigned VDP_READ_WORD(unsigned ADDRESS)
+{
+    switch (ADDRESS & 0xFC)
+    {
+        case 0x00:
+        {
+            return VDP_DATA_R();
+        }
+
+        case 0x04:
+        {
+            unsigned DATA = VDP_HV_READ(M68K_CYCLE) & 0x3FF;
+            ADDRESS = M68K_PC;
+            DATA |= (*(U16*)(CPU.MEMORY_MAP[((ADDRESS) >> 16) & 0xFF].MEMORY_BASE + ((ADDRESS) & 0xFFFF)) & 0xFC00);
+
+            return DATA;
+        }
+
+        case 0x08:
+        case 0x0C:
+        {
+            return VDP_HV_READ(M68K_CYCLE);
+        }
+    
+        default:
+        {
+            return M68K_READ_16(ADDRESS);
+        }
+    }
+}
+
+void VDP_WRITE_BYTE(unsigned ADDRESS, unsigned DATA)
+{
+    switch (ADDRESS)
+    {
+        case 0x00:
+        {
+            VDP_68K_WRITE(DATA << 8);
+            return;
+        }
+
+        case 0x04:
+        {
+            VDP_CTRL_W(DATA << 8);
+            return;
+        }
+
+        case 0x10:
+        case 0x14:
+        {
+            if(ADDRESS & 1)
+            {
+                return;
+            }
+
+            return;
+        }
+
+        default:
+            M68K_WRITE_8(ADDRESS, DATA);
+            break;
     }
 }
