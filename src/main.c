@@ -51,12 +51,28 @@ int MD_CART_LOAD(char* FILENAME, MD_CART* CART)
     fread(CART->ROM_DATA, 1, SIZE, ROM);
 
     // EXTRA DEBUG INFORMATION PROVIDED ON COMMAND
-    // SUCH AS THE CHEKCSUM IN HEX
-
+    // SUCH AS THE CHECKSUM IN HEX
     GET_CHECKSUM(CART->ROM_DATA, SIZE, FILENAME);
 
     fclose(ROM);
     printf("ROM Loaded Successfully. Size: %lu bytes\n", SIZE);
+
+    if (VDP != NULL) 
+    {
+        memcpy(VDP->VRAM, CART->ROM_DATA, 0x10000);
+        printf("Loaded ROM data into VDP VRAM.\n");
+
+        printf("First 16 bytes of VRAM after loading ROM:\n");
+        for (int i = 0; i < 16; i++) 
+        {
+            printf("%02X ", VDP->VRAM[i]);
+        }
+        printf("\n");
+    } 
+    else
+    {
+        printf("VDP is NULL. Cannot load ROM data into VRAM.\n");
+    }
 
     return 0;
 }
@@ -93,26 +109,27 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    /* THIS IS VERY CUT AND DRY, VERY DIRTY IMPLEMENTATION */
-    /* THOUGH, THIS IS THE BEST I CAN DO RIGHT NOW */
-
     MD* CONSOLE = (MD*)malloc(sizeof(MD));
     memset(CONSOLE, 0, sizeof(MD));
 
     CONSOLE->MD_CART = (MD_CART*)malloc(sizeof(MD_CART));
     memset(CONSOLE->MD_CART, 0, sizeof(MD_CART));
 
-    INIT_CHIPS(&CPU);    
+    VDP_INIT();
+    INIT_CHIPS(&CPU);
 
     if (MD_CART_LOAD((char*)ROM_PATH, CONSOLE->MD_CART) != 0) 
     {
         printf("Failed to load ROM from: %s\n", ROM_PATH);
         free(CONSOLE->MD_CART);
         free(CONSOLE);
+        free(VDP);
         return -1;
     }
 
-    while (!QUIT)
+    VDP_DEBUG_OUTPUT();
+
+    while (!QUIT) 
     {
         while (SDL_PollEvent(&EV)) 
         {
@@ -130,9 +147,9 @@ int main(int argc, char* argv[])
     {
         free(CONSOLE->MD_CART->ROM_DATA);
     }
-    
     free(CONSOLE->MD_CART);
     free(CONSOLE);
+    free(VDP);
 
     SDL_DestroyRenderer(RENDERER);
     SDL_DestroyWindow(WINDOW);
