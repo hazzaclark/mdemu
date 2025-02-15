@@ -27,7 +27,7 @@ static U8 PIXEL[0x100];
 static U8 PIXEL_LUT[3][0x200];
 static U8 PIXEL_LINE_BUFFER[2][0x200];
 
-static VDP_BASE* VDP;
+VDP_BASE* VDP = NULL;
 static VDP_BITMAP* VDP_BMP;
 
 void(*RENDER_BG)(int LINE);
@@ -41,35 +41,88 @@ void(*VDP_DATA_W)(void);
 unsigned(*VDP_CTRL_R)(unsigned CYCLES);
 void(*VDP_CTRL_W)(unsigned DATA);
 
-
 //================================================
 //           VDP INITIAL CO-ROUTINES
 //================================================
 
-void VDP_INIT(void)
+void VDP_INIT(void) 
 {
-    VDP = malloc(sizeof(struct VDP_BASE));
-
-    if(VDP == NULL)
+    VDP = malloc(sizeof(VDP_BASE));
+    if (VDP == NULL) 
     {
         perror("Memory Allocation failed for VDP\n");
         exit(EXIT_FAILURE);
     }
 
+    memset(VDP->VDP_REG, 0, sizeof(VDP->VDP_REG));
+    memset(VDP->VRAM, 0, sizeof(VDP->VRAM));
+    memset(VDP->CRAM, 0, sizeof(VDP->CRAM));
+    memset(VDP->VSRAM, 0, sizeof(VDP->VSRAM));
 
-    // PAL AND NTSC TIMING
-    // NTSC - 313
-    // PAL - 262
+    VDP->VDP_REG[0] = 0x04; // Mode Register 1
+    VDP->VDP_REG[1] = 0x74; // Mode Register 2 (Enable display, enable VBLANK interrupt)
+    VDP->VDP_REG[2] = 0x30; // Plane A Name Table Address
+    VDP->VDP_REG[3] = 0x3C; // Window Name Table Address
+    VDP->VDP_REG[4] = 0x07; // Plane B Name Table Address
+    VDP->VDP_REG[5] = 0x6C; // Sprite Table Address
+    VDP->VDP_REG[6] = 0x00; // Sprite Pattern Generator Base Address
+    VDP->VDP_REG[7] = 0x00; // Background Color
+    VDP->VDP_REG[8] = 0x00; // Unused
+    VDP->VDP_REG[9] = 0x00; // Unused
+    VDP->VDP_REG[10] = 0xFF; // HBLANK Counter
+    VDP->VDP_REG[11] = 0x00; // External Interrupt Enable
+    VDP->VDP_REG[12] = 0x81; // Mode Register 3
+    VDP->VDP_REG[13] = 0x37; // Mode Register 4
+    VDP->VDP_REG[14] = 0x00; // HScroll Data Address
+    VDP->VDP_REG[15] = 0x02; // Auto-Increment Value
+    VDP->VDP_REG[16] = 0x01; // Plane Size
+    VDP->VDP_REG[17] = 0x00; // Window Plane Horizontal Position
+    VDP->VDP_REG[18] = 0x00; // Window Plane Vertical Position
+    VDP->VDP_REG[19] = 0x00; // DMA Length Low
+    VDP->VDP_REG[20] = 0x00; // DMA Length High
+    VDP->VDP_REG[21] = 0x00; // DMA Source Address Low
+    VDP->VDP_REG[22] = 0x00; // DMA Source Address Mid
+    VDP->VDP_REG[23] = 0x80; // DMA Source Address High
 
-    VDP->LINES_PER_FRAME = VDP->VDP_PAL ? VDP_NTSC_TIMING : VDP_PAL_TIMING;
-
-    // DETERMINE THE SYSTEM TYPE AND SET THE CONCURRENT 
-    // IRQ FROM THE VDP TO THE 68K - MAKING SURE THEY MATCH
-
-    if((!SYSTEM_MD))
+    for (int i = 0; i < 0x40; i += 2) 
     {
-        VDP->SET_IRQ = M68K_SET_SR_IRQ;
+        VDP->CRAM[i] = 0x0E; 
+        VDP->CRAM[i + 1] = 0x0E;
     }
+
+    VDP->HINT = 0;
+    VDP->VINT = 0;
+    VDP->STATUS = 0;
+    VDP->DMA_LEN = 0;
+    VDP->DMA_END_CYCLES = 0;
+    VDP->DMA_TYPE = 0;
+    VDP->A_BASE = 0;
+    VDP->B_BASE = 0;
+    VDP->W_BASE = 0;
+    VDP->SPRITE_TABLE = 0;
+    VDP->HORI_SCROLL = 0;
+    VDP->VDP_PAL = 0;
+    VDP->H_COUNTER = 0;
+    VDP->V_COUNTER = 0;
+    VDP->VC_MAX = 0;
+    VDP->PAL = 0;
+    VDP->LINES_PER_FRAME = VDP->VDP_PAL ? VDP_NTSC_TIMING : VDP_PAL_TIMING;
+    VDP->VINT_CYCLES = 0;
+    VDP->HV_LATCH = 0;
+    VDP->FIFO_IDX = 0;
+    VDP->FIFO_TIMING = NULL;
+
+    for (int i = 0; i < 4; i++) 
+    {
+        VDP->FIFO_CYCLES[i] = 0;
+    }
+
+    VDP->VDP_CYCLES = 0;
+    VDP->H_COUNTER_TABLE = NULL;
+    VDP->SET_IRQ = NULL;
+    VDP->SET_IRQ_DELAY = NULL;
+
+    printf("VDP initialized: %p\n", (void*)VDP);
 }
 
 void VDP_RESET(void)
@@ -428,4 +481,79 @@ void VDP_WRITE_BYTE(unsigned ADDRESS, unsigned DATA)
             M68K_WRITE_8(ADDRESS, DATA);
             break;
     }
+}
+
+void VDP_DEBUG_OUTPUT(void) 
+{
+    if (VDP == NULL) {
+        printf("VDP is NULL. Cannot output debug information.\n");
+        return;
+    }
+
+    printf("VDP Debug Information:\n");
+    printf("======================\n");
+
+    printf("VDP Registers:\n");
+    for (int i = 0; i < 0x20; i++) 
+    {
+        printf("Register 0x%02X: 0x%02X\n", i, VDP->VDP_REG[i]);
+    }
+
+    printf("\nVRAM Contents (first 256 bytes):\n");
+    for (int i = 0; i < 256; i++) 
+    {
+        if (i % 16 == 0) printf("\n0x%04X: ", i);
+        printf("%02X ", VDP->VRAM[i]);
+    }
+
+    printf("\n\nCRAM Contents:\n");
+    for (int i = 0; i < 0x80; i++) 
+    {
+        if (i % 16 == 0) printf("\n0x%04X: ", i);
+        printf("%02X ", VDP->CRAM[i]);
+    }
+
+    printf("\n\nVSRAM Contents:\n");
+    for (int i = 0; i < 0x80; i++) 
+    {
+        if (i % 16 == 0) printf("\n0x%04X: ", i);
+        printf("%02X ", VDP->VSRAM[i]);
+    }
+
+    printf("\n\nStatus Flags:\n");
+    printf("HINT: 0x%02X\n", VDP->HINT);
+    printf("VINT: 0x%02X\n", VDP->VINT);
+    printf("STATUS: 0x%04X\n", VDP->STATUS);
+
+    printf("\nDMA Information:\n");
+    printf("DMA_LEN: 0x%08X\n", VDP->DMA_LEN);
+    printf("DMA_END_CYCLES: 0x%08X\n", VDP->DMA_END_CYCLES);
+    printf("DMA_TYPE: 0x%02X\n", VDP->DMA_TYPE);
+
+    printf("\nBase Addresses:\n");
+    printf("A_BASE: 0x%04X\n", VDP->A_BASE);
+    printf("B_BASE: 0x%04X\n", VDP->B_BASE);
+    printf("W_BASE: 0x%04X\n", VDP->W_BASE);
+    printf("SPRITE_TABLE: 0x%04X\n", VDP->SPRITE_TABLE);
+    printf("HORI_SCROLL: 0x%04X\n", VDP->HORI_SCROLL);
+
+    printf("\nCounters:\n");
+    printf("H_COUNTER: 0x%02X\n", VDP->H_COUNTER);
+    printf("V_COUNTER: 0x%04X\n", VDP->V_COUNTER);
+    printf("VC_MAX: 0x%04X\n", VDP->VC_MAX);
+    printf("PAL: 0x%04X\n", VDP->PAL);
+    printf("LINES_PER_FRAME: 0x%04X\n", VDP->LINES_PER_FRAME);
+    printf("VINT_CYCLES: 0x%08X\n", VDP->VINT_CYCLES);
+
+    printf("\nFIFO Information:\n");
+    printf("FIFO_IDX: %d\n", VDP->FIFO_IDX);
+
+    for (int i = 0; i < 4; i++) 
+    {
+        printf("FIFO_CYCLES[%d]: 0x%08X\n", i, VDP->FIFO_CYCLES[i]);
+    }
+    printf("VDP_CYCLES: 0x%08X\n", VDP->VDP_CYCLES);
+
+    printf("\nEnd of VDP Debug Information\n");
+    printf("============================\n");
 }
