@@ -13,6 +13,9 @@
 
 #include "md.h"
 #include "cartridge.h"
+#include "vdp.h"
+
+VDP_BASE* VDP;
 
 /* A MASTER FUNCTION TO LOAD THE CARTRIDGE INFORMATION */
 /* THIS IS DONE BY SEEKING INTO THE CONTENTS OF THE HEADER */
@@ -50,29 +53,18 @@ int MD_CART_LOAD(char* FILENAME, MD_CART* CART)
 
     fread(CART->ROM_DATA, 1, SIZE, ROM);
 
-    // EXTRA DEBUG INFORMATION PROVIDED ON COMMAND
-    // SUCH AS THE CHECKSUM IN HEX
     GET_CHECKSUM(CART->ROM_DATA, SIZE, FILENAME);
 
     fclose(ROM);
     printf("ROM Loaded Successfully. Size: %lu bytes\n", SIZE);
 
-    if (VDP != NULL) 
+    printf("First 16 bytes of ROM:\n");
+    for (int i = 0; i < 16; i++) 
     {
-        memcpy(VDP->VRAM, CART->ROM_DATA, 0x10000);
-        printf("Loaded ROM data into VDP VRAM.\n");
-
-        printf("First 16 bytes of VRAM after loading ROM:\n");
-        for (int i = 0; i < 16; i++) 
-        {
-            printf("%02X ", VDP->VRAM[i]);
-        }
-        printf("\n");
-    } 
-    else
-    {
-        printf("VDP is NULL. Cannot load ROM data into VRAM.\n");
+        printf("%02X ", CART->ROM_DATA[i]);
     }
+    
+    printf("\n");
 
     return 0;
 }
@@ -126,8 +118,6 @@ int main(int argc, char* argv[])
         free(VDP);
         return -1;
     }
-
-    VDP_DEBUG_OUTPUT();
 
     while (!QUIT) 
     {
